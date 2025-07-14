@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>物品借用管理系統</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Login / Register Layer -->
+  <div id="authLayer" class="login-container gradient-bg">
+    <div class="login-card">
+      <h1 class="login-title">物品借用管理系統</h1>
+
+      <!-- Login form -->
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <input id="loginUser" class="form-control" type="text" placeholder="帳號" autocomplete="username" required />
+        </div>
+        <div class="form-group">
+          <input id="loginPass" class="form-control" type="password" placeholder="密碼" autocomplete="current-password" required />
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input id="rememberMe" type="checkbox" class="checkbox-input" />
+            <span class="checkbox-text">記住我的登入</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn--primary btn--full-width">登入</button>
+        </div>
+        <div class="form-group">
+          <button id="toRegister" type="button" class="btn btn--outline btn--full-width">註冊</button>
+        </div>
+      </form>
+
+      <!-- Register form -->
+      <form id="registerForm" class="login-form hidden">
+        <div class="form-group">
+          <input id="registerUser" class="form-control" type="text" placeholder="帳號" required />
+        </div>
+        <div class="form-group">
+          <input id="displayName" class="form-control" type="text" placeholder="顯示名稱" required />
+        </div>
+        <div class="form-group">
+          <input id="registerPass" class="form-control" type="password" placeholder="密碼 (至少 6 字)" required />
+        </div>
+        <div class="form-group">
+          <input id="confirmPass" class="form-control" type="password" placeholder="確認密碼" required />
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn--primary btn--full-width">完成註冊</button>
+        </div>
+        <div class="form-group">
+          <button id="backToLogin" type="button" class="btn btn--outline btn--full-width">返回登入</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard Layer -->
+  <div id="dashboardLayer" class="hidden">
+    <div class="dashboard-header">
+      <div class="container flex justify-between items-center">
+        <h1 class="dashboard-title">物品借用管理系統</h1>
+        <div class="user-info">
+          <span id="welcomeText">歡迎</span>
+          <button id="logoutBtn" class="btn btn--outline btn--sm">登出</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container py-16">
+      <!-- Tab Navigation -->
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="items">物品管理</button>
+        <button class="tab-btn" data-tab="borrowings">
+          借用管理
+          <span id="borrowingBadge" class="notification-badge hidden">0</span>
+        </button>
+        <button class="tab-btn" data-tab="returns">
+          歸還管理
+          <span id="returnBadge" class="notification-badge hidden">0</span>
+        </button>
+        <button class="tab-btn admin-only" data-tab="accounts">帳戶管理</button>
+      </nav>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Items Management Tab -->
+        <div id="itemsTab" class="tab-pane active">
+          <div class="tab-header">
+            <h2>物品管理</h2>
+            <button id="addItemBtn" class="btn btn--primary admin-only">新增物品</button>
+          </div>
+          <div class="items-grid" id="itemsGrid"></div>
+        </div>
+
+        <!-- Borrowings Management Tab -->
+        <div id="borrowingsTab" class="tab-pane">
+          <div class="tab-header">
+            <h2>借用管理</h2>
+            <button id="applyBorrowBtn" class="btn btn--primary user-only">申請借用</button>
+          </div>
+          <div class="borrowings-table-container">
+            <table class="data-table" id="borrowingsTable">
+              <thead>
+                <tr>
+                  <th>物品名稱</th>
+                  <th>申請人</th>
+                  <th>申請時間</th>
+                  <th>預期歸還</th>
+                  <th>狀態</th>
+                  <th class="admin-only">操作</th>
+                </tr>
+              </thead>
+              <tbody id="borrowingsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Returns Management Tab -->
+        <div id="returnsTab" class="tab-pane">
+          <div class="tab-header">
+            <h2>歸還管理</h2>
+            <button id="applyReturnBtn" class="btn btn--primary user-only">申請歸還</button>
+          </div>
+          <div class="returns-table-container">
+            <table class="data-table" id="returnsTable">
+              <thead>
+                <tr>
+                  <th>物品名稱</th>
+                  <th>歸還人</th>
+                  <th>申請時間</th>
+                  <th>狀態</th>
+                  <th class="admin-only">操作</th>
+                </tr>
+              </thead>
+              <tbody id="returnsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Accounts Management Tab -->
+        <div id="accountsTab" class="tab-pane">
+          <div class="tab-header">
+            <h2>帳戶管理</h2>
+            <button id="addAccountBtn" class="btn btn--primary">新增帳戶</button>
+          </div>
+          <div class="accounts-table-container">
+            <table class="data-table" id="accountsTable">
+              <thead>
+                <tr>
+                  <th>帳號</th>
+                  <th>顯示名稱</th>
+                  <th>角色</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="accountsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Item Form Modal -->
+  <div id="itemModal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="itemModalTitle">新增物品</h3>
+      <form id="itemForm">
+        <div class="form-group">
+          <label class="form-label">物品名稱</label>
+          <input id="itemName" class="form-control" type="text" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">描述</label>
+          <textarea id="itemDescription" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">分類</label>
+          <select id="itemCategory" class="form-control" required>
+            <option value="">請選擇分類</option>
+            <option value="電子設備">電子設備</option>
+            <option value="攝影設備">攝影設備</option>
+            <option value="辦公用品">辦公用品</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">狀態</label>
+          <select id="itemStatus" class="form-control" required>
+            <option value="可借用">可借用</option>
+            <option value="已借出">已借出</option>
+            <option value="維護中">維護中</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn--primary">確定</button>
+          <button type="button" class="btn btn--outline modal-close">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Borrow Form Modal -->
+  <div id="borrowModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>申請借用</h3>
+      <form id="borrowForm">
+        <div class="form-group">
+          <label class="form-label">選擇物品</label>
+          <select id="borrowItemSelect" class="form-control" required>
+            <option value="">請選擇物品</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">預期歸還時間</label>
+          <input id="borrowReturnDate" class="form-control" type="date" required />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn--primary">提交申請</button>
+          <button type="button" class="btn btn--outline modal-close">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Return Form Modal -->
+  <div id="returnModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>申請歸還</h3>
+      <form id="returnForm">
+        <div class="form-group">
+          <label class="form-label">選擇要歸還的物品</label>
+          <select id="returnItemSelect" class="form-control" required>
+            <option value="">請選擇物品</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn--primary">提交歸還申請</button>
+          <button type="button" class="btn btn--outline modal-close">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Account Form Modal -->
+  <div id="accountModal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="accountModalTitle">新增帳戶</h3>
+      <form id="accountForm">
+        <div class="form-group">
+          <label class="form-label">帳號</label>
+          <input id="accountUserId" class="form-control" type="text" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">顯示名稱</label>
+          <input id="accountDisplayName" class="form-control" type="text" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">密碼</label>
+          <input id="accountPassword" class="form-control" type="password" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">角色</label>
+          <select id="accountRole" class="form-control" required>
+            <option value="user">一般用戶</option>
+            <option value="admin">管理員</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn--primary">確定</button>
+          <button type="button" class="btn btn--outline modal-close">取消</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
